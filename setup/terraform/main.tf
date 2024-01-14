@@ -20,7 +20,7 @@ resource "aws_internet_gateway" "igw" {
 resource "aws_subnet" "public_subnet" {
   vpc_id                  = aws_vpc.vpc.id
   cidr_block              = "10.0.1.0/24"
-  availability_zone       = "us-east-1${var.public_az}"
+  availability_zone       = "us-west-2${var.public_az}"
   map_public_ip_on_launch = true
   tags = {
     Name = "udacity-public"
@@ -50,7 +50,7 @@ resource "aws_route_table_association" "public" {
 # Create a private subnet
 resource "aws_subnet" "private_subnet" {
   vpc_id            = aws_vpc.vpc.id
-  availability_zone = "us-east-1${var.private_az}"
+  availability_zone = "us-west-2${var.private_az}"
   cidr_block        = "10.0.2.0/24"
   tags = {
     Name = "udacity-private"
@@ -76,7 +76,7 @@ resource "aws_route_table_association" "private" {
 resource "aws_vpc_endpoint" "eks" {
   count               = var.enable_private == true ? 1 : 0 # only enable when private
   vpc_id              = aws_vpc.vpc.id
-  service_name        = "com.amazonaws.us-east-1.eks"
+  service_name        = "com.amazonaws.us-west-2.eks"
   vpc_endpoint_type   = "Interface"
   security_group_ids  = [aws_eks_cluster.main.vpc_config.0.cluster_security_group_id]
   subnet_ids          = [aws_subnet.private_subnet.id]
@@ -87,7 +87,7 @@ resource "aws_vpc_endpoint" "eks" {
 resource "aws_vpc_endpoint" "ec2" {
   count               = var.enable_private == true ? 1 : 0
   vpc_id              = aws_vpc.vpc.id
-  service_name        = "com.amazonaws.us-east-1.ec2"
+  service_name        = "com.amazonaws.us-west-2.ec2"
   vpc_endpoint_type   = "Interface"
   security_group_ids  = [aws_eks_cluster.main.vpc_config.0.cluster_security_group_id]
   private_dns_enabled = true
@@ -96,7 +96,7 @@ resource "aws_vpc_endpoint" "ec2" {
 resource "aws_vpc_endpoint" "ecr-dkr-endpoint" {
   count               = var.enable_private == true ? 1 : 0
   vpc_id              = aws_vpc.vpc.id
-  service_name        = "com.amazonaws.us-east-1.ecr.dkr"
+  service_name        = "com.amazonaws.us-west-2.ecr.dkr"
   vpc_endpoint_type   = "Interface"
   security_group_ids  = [aws_eks_cluster.main.vpc_config.0.cluster_security_group_id]
   subnet_ids          = [aws_subnet.private_subnet.id]
@@ -106,7 +106,7 @@ resource "aws_vpc_endpoint" "ecr-dkr-endpoint" {
 resource "aws_vpc_endpoint" "ecr-api-endpoint" {
   count               = var.enable_private == true ? 1 : 0
   vpc_id              = aws_vpc.vpc.id
-  service_name        = "com.amazonaws.us-east-1.ecr.api"
+  service_name        = "com.amazonaws.us-west-2.ecr.api"
   vpc_endpoint_type   = "Interface"
   security_group_ids  = [aws_eks_cluster.main.vpc_config.0.cluster_security_group_id]
   subnet_ids          = [aws_subnet.private_subnet.id]
