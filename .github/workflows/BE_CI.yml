@@ -1,4 +1,4 @@
-name: FE-CI-workflow
+name: Backend-CI-Workflow
 
 on: 
   push:
