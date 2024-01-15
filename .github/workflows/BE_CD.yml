@@ -1,4 +1,4 @@
-name: Frontend CD
+name: Backend-CD-Workflow
 
 on:
   push:
@@ -7,32 +7,55 @@ on:
 
 defaults:
   run:
-    working-directory: ./starter/frontend
+    working-directory: ./starter/backend
 
 jobs:
-  test:
-    name: "Test"
+  lint:
+    name: 'Lint'
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - name: Setup python
+        uses: actions/setup-python@v5
         with:
-          node-version: 18.14
+          python-version: '3.10'
 
+      - name: install pip env
+        run: |
+          pip install pipenv --user
+          pip install flake8
+
+      - name: Run linting
+        run: pipenv run lint
+  test:
+    name: 'Test'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      
+      - name: install pip env
+        run: pip install pipenv --user
+      
       - name: Install dependencies
-        run: npm ci
+        run: pipenv install
       
       - name: Run tests
-        run: CI=true npm test
+        run: pipenv run test
 
   build:
-    name: "Build"
+    name: 'Build'
     runs-on: ubuntu-latest
-    needs: [test]
+    needs: [lint, test]
     env:
         IMAGE_NAME: 'movie-catalog'
         EKS_CLUSTER_NAME: 'cluster'
@@ -41,11 +64,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          node-version: 18.14
-      
+          python-version: '3.10'
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
@@ -61,10 +84,11 @@ jobs:
       - name: Build Docker image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: frontend
+          ECR_REPOSITORY: backend
+
 
         run: | 
-          docker build --build-arg=REACT_APP_MOVIE_API_URL=http://localhost:5000 -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_NAME .
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_NAME .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_NAME
 
       - name: Deploy to EKS
@@ -76,20 +100,9 @@ jobs:
           kubectl apply -f k8s/deployment.yaml
           kubectl rollout restart deployment frontend
 
-  deploy:
-    name: "Deploy"
-    runs-on: ubuntu-latest
-    needs: [build]
+      - name: install pip env
+        run: pip install pipenv --user
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18.14
-
-      - name: Deploy to Prod
-        run: echo "Deploying to production"
+      - name: Install dependencies
+        run: pipenv install
 
