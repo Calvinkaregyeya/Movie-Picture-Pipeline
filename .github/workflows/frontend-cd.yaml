@@ -98,10 +98,7 @@ jobs:
           AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
           aws eks --region $AWS_REGION update-kubeconfig --name $EKS_CLUSTER_NAME
+          cd ./k8s/
           kustomize edit set image frontend=$ECR_REGISTRY/$ECR_REPOSITORY:${GITHUB_SHA::7}
-          cd k8s/
           kustomize build | kubectl apply -f -
-
-          # kubectl apply -f k8s/deployment.yaml
-          # kubectl rollout restart deployment frontend
 
