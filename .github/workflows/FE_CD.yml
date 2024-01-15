@@ -90,7 +90,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          tags: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_NAME
+          tags: $IMAGE_NAME:latest
           outputs: type=docker,dest=/tmp/movie-pipeline.tar
 
       - name: Upload artifact
