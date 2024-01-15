@@ -4,15 +4,15 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'starter/frontend/**'
+    
   # Automatic trigger on pull requests that are closed to the main branch
   pull_request:
     types: [closed]
     branches:
       - main
     paths:
-      - 'starter/frontend/**'
+      - 'starter/backend/**'
+  
   # Manual trigger using the workflow_dispatch event
   workflow_dispatch:
 
@@ -30,12 +30,12 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-python@v5
         with:
-          node-version: 18.14
+          python-version: '3.10'
 
       - name: Run linting
-        run: npm run lint
+        run: pipenv run lint
   test:
     name: 'Test'
     runs-on: ubuntu-latest
@@ -45,15 +45,15 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-python@v5
         with:
-          node-version: 18.14
+          python-version: '3.10'
       
       - name: Install dependencies
-        run: npm ci
+        run: pipenv install
       
       - name: Run tests
-        run: CI=true npm test
+        run: pipenv run test
 
   build:
     name: 'Build'
@@ -68,10 +68,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18.14
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Run Build
-        run: npm run build
 
+      - name: Install dependencies
+        run: pipenv install
