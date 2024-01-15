@@ -7,7 +7,7 @@ on:
 
 defaults:
   run:
-    working-directory: ./starter/frontend
+    working-directory: ./starter/backend
 
 jobs:
   test:
