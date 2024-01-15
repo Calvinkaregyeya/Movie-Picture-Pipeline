@@ -1,9 +1,19 @@
-name: Backend-CD-Workflow
+name: Backend Continuous Integration
 
-on:
+on: 
   push:
     branches:
       - main
+    
+  # Automatic trigger on pull requests that are closed to the main branch
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'starter/backend/**'
+  
+  # Manual trigger using the workflow_dispatch event
+  workflow_dispatch:
 
 defaults:
   run:
@@ -56,9 +66,6 @@ jobs:
     name: 'Build'
     runs-on: ubuntu-latest
     needs: [lint, test]
-    env:
-        IMAGE_NAME: 'movie-catalog'
-        EKS_CLUSTER_NAME: 'cluster'
 
     steps:
       - name: Checkout code
@@ -69,40 +76,8 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v3
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-      
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Build Docker image
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: backend
-
-
-        run: | 
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_NAME .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_NAME
-
-      - name: Deploy to EKS
-        env:
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-        run: |
-          aws eks --region $AWS_REGION update-kubeconfig --name $EKS_CLUSTER_NAME
-
-          kubectl apply -f k8s/deployment.yaml
-          kubectl rollout restart deployment frontend
-
       - name: install pip env
         run: pip install pipenv --user
 
       - name: Install dependencies
-        run: pipenv install
-
+        run: docker build --tag mp-backend:latest .

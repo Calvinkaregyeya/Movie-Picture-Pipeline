@@ -1,4 +1,4 @@
-name: Frontend-CI-Workflow
+name: Frontend Continuous Integration
 
 on: 
   push:
@@ -8,7 +8,6 @@ on:
       - 'starter/frontend/**'
   # Automatic trigger on pull requests that are closed to the main branch
   pull_request:
-    types: [closed]
     branches:
       - main
     paths:
@@ -33,6 +32,9 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18.14
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Run linting
         run: npm run lint
