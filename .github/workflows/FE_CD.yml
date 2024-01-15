@@ -80,25 +80,6 @@ jobs:
           kubectl apply -f k8s/deployment.yaml
           kubectl rollout restart deployment frontend
 
-      - name: Build and export
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: frontend
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          tags: movie-catalog:latest
-          outputs: type=docker,dest=/tmp/movie-pipeline.tar
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: movie-pipeline
-          path: /tmp/movie-pipeline.tar
-
   deploy:
     name: "Deploy"
     runs-on: ubuntu-latest
@@ -116,13 +97,3 @@ jobs:
       - name: Deploy to Prod
         run: echo "Deploying to production"
 
-      - name: Download artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: movie-pipeline
-          path: /tmp
-
-      - name: Load image
-        run: |
-          docker load --input /tmp/movie-pipeline.tar
-          docker image ls -a 
