@@ -35,7 +35,9 @@ jobs:
           python-version: '3.10'
 
       - name: install pip env
-        run: pip install pipenv --user
+        run: |
+          pip install pipenv --user
+          pip install flake8
 
       - name: Run linting
         run: pipenv run lint
