@@ -90,7 +90,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          tags: $IMAGE_NAME:latest
+          tags: movie-catalog:latest
           outputs: type=docker,dest=/tmp/movie-pipeline.tar
 
       - name: Upload artifact
