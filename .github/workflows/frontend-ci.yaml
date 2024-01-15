@@ -4,8 +4,7 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'starter/frontend/**'
+      
   # Automatic trigger on pull requests that are closed to the main branch
   pull_request:
     branches:

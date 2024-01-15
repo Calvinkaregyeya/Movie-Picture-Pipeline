@@ -83,18 +83,25 @@ jobs:
       - name: Build Docker image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          BACKEND_URL: ${{ secrets.REACT_APP_MOVIE_API_URL }}
           ECR_REPOSITORY: frontend
 
         run: | 
-          docker build --build-arg=REACT_APP_MOVIE_API_URL=http://localhost:5000 -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_NAME .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_NAME
+          docker build --build-arg=REACT_APP_MOVIE_API_URL=$BACKEND_URL -t $ECR_REGISTRY/$ECR_REPOSITORY:${GITHUB_SHA::7} .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:${GITHUB_SHA::7}
+
+      - name: Install kustomize
+        uses: imranismail/setup-kustomize@v2
 
       - name: Deploy to EKS
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
           aws eks --region $AWS_REGION update-kubeconfig --name $EKS_CLUSTER_NAME
+          kustomize edit set image frontend=$ECR_REGISTRY/$ECR_REPOSITORY:${GITHUB_SHA::7}
+          cd k8s/
+          kustomize build | kubectl apply -f -
 
-          kubectl apply -f k8s/deployment.yaml
-          kubectl rollout restart deployment frontend
+          # kubectl apply -f k8s/deployment.yaml
+          # kubectl rollout restart deployment frontend
 
